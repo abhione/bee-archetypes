@@ -29,16 +29,27 @@ const TEASER_ARCHETYPES = [
   },
 ];
 
+/**
+ * Reveal animation variants. Content is ALWAYS visible by default; motion only
+ * plays if it can. This prevents any headless-render / animation-scheduler
+ * failure mode from hiding content.
+ */
+const revealVariants = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const softRise = {
+  hidden: { opacity: 1, y: 6 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const } },
+};
+
 export default function LandingPage() {
   return (
     <div className="mx-auto max-w-6xl px-6">
       {/* Hero */}
       <section className="pt-24 pb-32 md:pt-32 md:pb-40">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <motion.div initial="hidden" animate="visible" variants={softRise}>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-hive-charcoal/80 border border-hive-slate/60 text-xs uppercase tracking-widest text-hive-mist">
             <span className="w-1.5 h-1.5 rounded-full bg-hive-honey animate-pulse" />
             The Bee Archetypes assessment · beta
@@ -71,12 +82,7 @@ export default function LandingPage() {
 
       {/* Teaser archetypes */}
       <section className="pb-32">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
-        >
+        <motion.div initial="hidden" animate="visible" variants={revealVariants} className="mb-10">
           <p className="text-sm uppercase tracking-widest text-hive-mist">
             Fifteen archetypes across five systems
           </p>
@@ -87,12 +93,10 @@ export default function LandingPage() {
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TEASER_ARCHETYPES.map((a, i) => (
-            <motion.div
+            <div
               key={a.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="p-6 rounded-card bg-hive-charcoal/60 border border-hive-slate/50 hover:border-hive-honey/40 transition-colors group"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="flex items-center gap-2 mb-4">
                 <span className={cn('w-2 h-2 rounded-full', a.dotBg)} />
@@ -102,7 +106,7 @@ export default function LandingPage() {
               </div>
               <h3 className={cn('font-serif text-2xl mb-2', a.accent)}>{a.name}</h3>
               <p className="text-hive-cream/80 italic">{a.oneLiner}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
