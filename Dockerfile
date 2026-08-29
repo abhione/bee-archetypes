@@ -4,8 +4,12 @@ WORKDIR /app
 RUN corepack enable
 
 # Install deps first (better cache)
+# --config.dangerously-allow-all-builds=true bypasses pnpm 10's build-script gate
+# for the Docker build environment where we control the deps completely.
 COPY package.json pnpm-lock.yaml* ./
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile || pnpm install
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --config.dangerously-allow-all-builds=true \
+    || pnpm install --config.dangerously-allow-all-builds=true
 
 # Copy source and build
 COPY . .
