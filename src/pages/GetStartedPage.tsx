@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useOrganizationList, useUser, useOrganization } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { BUYER_PERSONAS, type BuyerPersonaId } from '@/data/buyerPersonas';
 import {
@@ -8,6 +9,8 @@ import {
   inviteMembers,
   SIZE_RANGES,
   CHALLENGES,
+  slugify,
+  saveOrgMetadata,
   type SizeRange,
   type ChallengeTag,
 } from '@/data/orgStore';
@@ -15,9 +18,17 @@ import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 type Step = 'persona' | 'org' | 'invite' | 'done';
 
+const CLERK_ENABLED = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
 export default function GetStartedPage() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const { createOrganization, setActive } = useOrganizationList();
+  const { organization: activeOrganization } = useOrganization();
+
   const [step, setStep] = useState<Step>('persona');
+  const [, setSubmitting] = useState(false);
+  const [, setError] = useState<string | null>(null);
 
   // Persona step
   const [persona, setPersona] = useState<BuyerPersonaId | null>(null);
@@ -27,6 +38,7 @@ export default function GetStartedPage() {
   const [industry, setIndustry] = useState('');
   const [sizeRange, setSizeRange] = useState<SizeRange | null>(null);
   const [challenge, setChallenge] = useState<ChallengeTag | null>(null);
+  // Owner email: only used when Clerk isn't wired (fallback preview mode).
   const [ownerEmail, setOwnerEmail] = useState('');
 
   // Invite step
@@ -34,6 +46,7 @@ export default function GetStartedPage() {
 
   // Submitted org (needed to build final CTA URL)
   const [createdOrgSlug, setCreatedOrgSlug] = useState<string | null>(null);
+  const [createdOrgId, setCreatedOrgId] = useState<string | null>(null);
 
   const canProceedPersona = !!persona;
   const canProceedOrg =
@@ -41,32 +54,89 @@ export default function GetStartedPage() {
     industry.trim().length >= 2 &&
     !!sizeRange &&
     !!challenge &&
-    /\S+@\S+\.\S+/.test(ownerEmail);
+    (CLERK_ENABLED || /\S+@\S+\.\S+/.test(ownerEmail));
 
-  const handleCreateOrg = () => {
+  const handleCreateOrg = async () => {
     if (!persona || !sizeRange || !challenge) return;
-    const org = createOrg({
-      name: orgName.trim(),
-      buyerPersona: persona,
-      industry: industry.trim(),
-      sizeRange,
-      currentChallenge: challenge,
-      ownerEmail: ownerEmail.trim(),
-    });
-    setCreatedOrgSlug(org.slug);
-    setStep('invite');
+    setError(null);
+    setSubmitting(true);
+    try {
+      const slug = slugify(orgName.trim());
+      if (CLERK_ENABLED && createOrganization) {
+        // Real Clerk-backed org. Clerk stores name/slug/members. Our extra
+        // metadata (buyerPersona, industry, sizeRange, currentChallenge) is
+        // NOT writable to Clerk publicMetadata from the client, so we keep
+        // it in localStorage keyed by clerkOrg.id.
+        const clerkOrg = await createOrganization({
+          name: orgName.trim(),
+          slug,
+        });
+        saveOrgMetadata(clerkOrg.id, {
+          buyerPersona: persona,
+          industry: industry.trim(),
+          sizeRange,
+          currentChallenge: challenge,
+        });
+        if (setActive) {
+          await setActive({ organization: clerkOrg.id });
+        }
+        setCreatedOrgId(clerkOrg.id);
+        setCreatedOrgSlug(clerkOrg.slug ?? slug);
+      } else {
+        // Fallback: localStorage-backed (preview mode without Clerk).
+        const org = createOrg({
+          name: orgName.trim(),
+          buyerPersona: persona,
+          industry: industry.trim(),
+          sizeRange,
+          currentChallenge: challenge,
+          ownerEmail: ownerEmail.trim() || user?.primaryEmailAddress?.emailAddress || '',
+        });
+        setCreatedOrgSlug(org.slug);
+      }
+      setStep('invite');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(`Could not create hive: ${msg}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleInvites = () => {
-    if (!createdOrgSlug) return;
+  const handleInvites = async () => {
     const emails = inviteEmails
       .split(/[\s,;\n]+/)
       .map((e) => e.trim())
-      .filter(Boolean);
-    if (emails.length > 0) {
-      inviteMembers(createdOrgSlug, emails);
+      .filter((e) => e.includes('@'));
+    if (emails.length === 0) {
+      setStep('done');
+      return;
     }
-    setStep('done');
+    setError(null);
+    setSubmitting(true);
+    try {
+      if (CLERK_ENABLED && activeOrganization?.id === createdOrgId) {
+        // Real Clerk invites. Loop, swallow individual errors so a single
+        // typo doesn't kill the whole batch.
+        for (const emailAddress of emails) {
+          try {
+            await activeOrganization.inviteMember({ emailAddress, role: 'org:member' });
+          } catch {
+            /* individual invite failed; skip silently for beta */
+          }
+        }
+      } else if (createdOrgSlug) {
+        // Fallback: localStorage-backed (preview mode without Clerk).
+        inviteMembers(createdOrgSlug, emails);
+      }
+      setStep('done');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(`Some invites failed: ${msg}`);
+      setStep('done');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSkipInvites = () => {

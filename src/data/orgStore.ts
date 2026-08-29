@@ -147,3 +147,36 @@ export function inviteMembers(slug: string, emails: string[]): Org {
   saveAll(orgs);
   return org;
 }
+
+/* ── Clerk-org companion metadata ─────────────────────────────────────────
+ * Clerk stores name/slug/members/roles. Our app's extra org context
+ * (buyer persona, industry, size, current challenge) can't be written to
+ * Clerk publicMetadata from the client, so we keep it in localStorage keyed
+ * by the Clerk org.id. In production this migrates to a Fly SQLite row.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface OrgMetadata {
+  buyerPersona: BuyerPersonaId;
+  industry: string;
+  sizeRange: SizeRange;
+  currentChallenge: ChallengeTag | null;
+}
+
+const META_STORAGE_PREFIX = 'bee-archetypes:org-meta:';
+
+export function saveOrgMetadata(orgId: string, meta: OrgMetadata): void {
+  try {
+    localStorage.setItem(META_STORAGE_PREFIX + orgId, JSON.stringify(meta));
+  } catch {
+    /* localStorage disabled — ignore, dashboards fall back to defaults */
+  }
+}
+
+export function getOrgMetadata(orgId: string): OrgMetadata | null {
+  try {
+    const raw = localStorage.getItem(META_STORAGE_PREFIX + orgId);
+    return raw ? (JSON.parse(raw) as OrgMetadata) : null;
+  } catch {
+    return null;
+  }
+}

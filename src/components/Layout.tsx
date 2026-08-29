@@ -1,6 +1,14 @@
 import { Link, useLocation } from 'react-router';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  OrganizationSwitcher,
+} from '@clerk/clerk-react';
+
+const CLERK_ENABLED = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 interface LayoutProps {
   children: ReactNode;
@@ -36,16 +44,63 @@ function Header({ transparent }: { transparent?: boolean }) {
             Bee Archetypes
           </span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-hive-mist">
+        <nav className="hidden md:flex items-center gap-6 text-sm text-hive-mist">
           <Link to="/method" className="hover:text-hive-cream transition-colors">
             Method
           </Link>
-          <Link
-            to="/get-started"
-            className="px-4 py-2 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"
-          >
-            Bring to your team
-          </Link>
+
+          {CLERK_ENABLED ? (
+            <>
+              <SignedOut>
+                <Link to="/sign-in" className="hover:text-hive-cream transition-colors">
+                  Sign in
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="px-4 py-2 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"
+                >
+                  Bring to your team
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <Link to="/dashboard" className="hover:text-hive-cream transition-colors">
+                  Dashboard
+                </Link>
+                <div className="flex items-center gap-3">
+                  <OrganizationSwitcher
+                    hidePersonal={false}
+                    afterCreateOrganizationUrl={(org) =>
+                      `/org/${org.slug ?? org.id}/dashboard`
+                    }
+                    afterSelectOrganizationUrl={(org) =>
+                      `/org/${org.slug ?? org.id}/dashboard`
+                    }
+                    appearance={{
+                      elements: {
+                        organizationSwitcherTrigger:
+                          'text-hive-mist hover:text-hive-cream',
+                      },
+                    }}
+                  />
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: 'h-8 w-8',
+                      },
+                    }}
+                  />
+                </div>
+              </SignedIn>
+            </>
+          ) : (
+            <Link
+              to="/get-started"
+              className="px-4 py-2 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"
+            >
+              Bring to your team
+            </Link>
+          )}
         </nav>
       </div>
     </header>
