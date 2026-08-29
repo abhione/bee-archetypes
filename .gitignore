@@ -45,3 +45,13 @@ coverage
 
 # TypeScript
 *.tsbuildinfo
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Dev-only seed pages
+public/seed-*.html
+
+# Local demo assets
+public/demo-*
