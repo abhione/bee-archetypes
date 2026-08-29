@@ -151,7 +151,7 @@ export default function AssessmentPage() {
       <AnimatePresence>
         {showDraftPrompt && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 1, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             className="mb-8 p-5 rounded-card border border-hive-honey/40 bg-hive-honey/10"
