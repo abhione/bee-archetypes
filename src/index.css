@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Bee Archetypes / Hive design tokens */
+  --color-hive-black: #0E0E10;
+  --color-hive-charcoal: #1A1A1D;
+  --color-hive-slate: #2C2C33;
+  --color-hive-honey: #E8A317;
+  --color-hive-honey-dim: #B77D0C;
+  --color-hive-cream: #F5EFE0;
+  --color-hive-paper: #FBF7EB;
+  --color-hive-mist: #A0A0A8;
+  --color-hive-red: #C64B3E;
+  --color-hive-teal: #4A9E9E;
+
+  /* System colors — the five organizational systems */
+  --color-system-sun: #E8A317;      /* Direction & Strategy */
+  --color-system-comb: #C68B4A;     /* Execution & Structure */
+  --color-system-brood: #D97757;    /* People & Development */
+  --color-system-guard: #6B5B8C;    /* Risk & Protection */
+  --color-system-swarm: #4A9E9E;    /* Growth & Expansion */
+
+  --font-serif: 'Fraunces', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+}
+
+html, body {
+  background-color: var(--color-hive-black);
+  color: var(--color-hive-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+/* Utility: honeycomb texture background */
+.bg-honeycomb {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(232, 163, 23, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(74, 158, 158, 0.04) 0%, transparent 45%);
+}
+
+/* Utility: honey-underline for editorial serif */
+.honey-underline {
+  background-image: linear-gradient(120deg, var(--color-hive-honey) 0%, var(--color-hive-honey) 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 0.15em;
+  background-position: 0 88%;
+  transition: background-size 0.3s ease-in-out;
+}
+.honey-underline:hover {
+  background-size: 100% 0.35em;
+}
+
+/* Accessibility: focus rings match honey palette */
+:focus-visible {
+  outline: 2px solid var(--color-hive-honey);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

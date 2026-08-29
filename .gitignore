@@ -1,0 +1,47 @@
+# Deps
+node_modules
+.pnp
+.pnp.js
+
+# Build
+dist
+dist-ssr
+build
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+lerna-debug.log*
+
+# Test coverage
+coverage
+.nyc_output
+
+# Local state (agent build ledger)
+.omc/live/
+.omc/cache/
+.omc/tmp/
+
+# Fly
+.fly/
+
+# TypeScript
+*.tsbuildinfo
