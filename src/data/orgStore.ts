@@ -1,9 +1,45 @@
 /**
  * Org store — the local persistence layer for beta.
  *
- * Uses localStorage. In production this becomes a Fly SQLite volume behind
- * Clerk-authenticated API routes. Contract is the same; only the storage
- * driver swaps.
+ * ARCHITECTURE
+ * ============
+ * We have TWO stores that must stay coherent:
+ *
+ *   1. Clerk (source of truth for IDENTITY):
+ *      users, organizations (name/slug/members/roles/invitations).
+ *      Accessed via `useOrganization()`, `useOrganizationList()`, `useUser()`.
+ *
+ *   2. This file (source of truth for BEE-ARCHETYPES METADATA):
+ *      buyerPersona, industry, sizeRange, currentChallenge.
+ *      In localStorage keyed by the Clerk org.id (see `saveOrgMetadata`).
+ *
+ * WHY THE SPLIT: Clerk's client SDK rejects `organization.update({ publicMetadata: {...} })`
+ * with HTTP 403. Server-side write via `POST /v1/organizations/{id}` with a Bearer secret
+ * is available but requires a backend, which we don't have yet. Deferred to Wave 7.
+ *
+ * FALLBACK MODE (no Clerk): the entire Org type below is stored in localStorage under
+ * `bee-archetypes:orgs` keyed by slug. Used when `VITE_CLERK_PUBLISHABLE_KEY` is unset.
+ * Preview / demo mode only — not for production.
+ *
+ * MIGRATION PATH TO WAVE 7 (server-side SQLite):
+ *   - Add a Fly SQLite volume + minimal API
+ *   - On first Clerk sign-in, backfill OrgMetadata: localStorage → API → SQLite
+ *   - Deprecate the `saveOrgMetadata`/`getOrgMetadata` localStorage backing but
+ *     keep the exports as thin wrappers around API calls (same signature).
+ *
+ * CONTRACT SHAPE MATCHES A FUTURE SQL SCHEMA
+ * ==========================================
+ *   CREATE TABLE org_metadata (
+ *     org_id TEXT PRIMARY KEY,     -- Clerk org.id
+ *     buyer_persona TEXT NOT NULL,
+ *     industry TEXT,
+ *     size_range TEXT NOT NULL,
+ *     current_challenge TEXT,
+ *     created_at INTEGER NOT NULL,
+ *     updated_at INTEGER NOT NULL
+ *   );
+ *
+ * Do not change the OrgMetadata field names without also planning the SQL migration.
  */
 
 import type { BuyerPersonaId } from './buyerPersonas';

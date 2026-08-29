@@ -1,3 +1,49 @@
+/**
+ * GetStartedPage — the 3-step signup wizard.
+ *
+ * FLOW
+ * ====
+ *   Step 1 (persona)  → pick People-Leader or Business-Leader
+ *   Step 2 (org)      → org name, industry, size, current challenge
+ *   Step 3 (invite)   → invite emails (skippable)
+ *   Step 4 (done)     → confirmation → navigate to /org/:slug/dashboard
+ *
+ * CLERK INTEGRATION
+ * =================
+ * `handleCreateOrg` calls `createOrganization({ name, slug })` from
+ * `useOrganizationList()`. Clerk creates the org server-side, returns a shape
+ * with `.id` and `.slug`. We then:
+ *   1. Call `saveOrgMetadata(clerkOrg.id, {...})` — our extra fields
+ *      (buyerPersona, industry, sizeRange, currentChallenge) into localStorage
+ *   2. Call `setActive({ organization: clerkOrg.id })` so subsequent hooks see it
+ *   3. Advance the wizard to Step 3
+ *
+ * WHY WE DON'T CALL `clerkOrg.update({ publicMetadata })`
+ * =====================================================
+ * Client SDK returns HTTP 403 for publicMetadata mutations. Server-side write
+ * would work but requires a backend, which we don't have yet. Deferred to
+ * Wave 7 SQLite migration.
+ *
+ * HOOKS-INSIDE-CALLBACK RULE
+ * ==========================
+ * `handleInvites` reads `activeOrganization` from `useOrganization()` — a hook
+ * called at the TOP of the component (see line 27). Do NOT call `useOrganization`
+ * or `useOrganizationList` inside `handleInvites` or React will throw
+ * "hooks must be called in the same order every render."
+ *
+ * INVITE FLOW
+ * ===========
+ * Loops over parsed emails, calls `activeOrganization.inviteMember({ emailAddress,
+ * role: 'org:member' })`. Individual errors (typo emails, dupes) are swallowed
+ * so one bad email doesn't kill the whole batch.
+ *
+ * FALLBACK MODE
+ * =============
+ * When `VITE_CLERK_PUBLISHABLE_KEY` is unset, `createOrganization` from
+ * `useOrganizationList()` is undefined and we fall through to `createOrg()`
+ * (the pure localStorage function in orgStore.ts). Invites go to
+ * `inviteMembers(slug, emails)` (also localStorage). Preview mode only.
+ */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
