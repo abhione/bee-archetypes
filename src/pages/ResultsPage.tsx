@@ -23,7 +23,11 @@ interface StoredResult {
 
 function loadResult(token: string): StoredResult | null {
   try {
-    const raw = sessionStorage.getItem(`bee-archetypes:result:${token}`);
+    // Prefer sessionStorage (freshly-completed assessment).
+    // Fall back to localStorage (shareable link opened later in same browser).
+    const raw =
+      sessionStorage.getItem(`bee-archetypes:result:${token}`) ??
+      localStorage.getItem(`bee-archetypes:result:${token}`);
     if (!raw) return null;
     return JSON.parse(raw) as StoredResult;
   } catch {

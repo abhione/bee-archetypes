@@ -19,7 +19,7 @@ from importlib.machinery import SourceFileLoader
 
 REPO = Path(__file__).resolve().parent.parent
 GEN_PATH = REPO / 'scripts' / 'generate-archetype-content.py'
-CONTENT_JSON = Path('/tmp/bee-archetype-content.json')
+CONTENT_JSON = Path('/tmp/bee-archetype-content-keyed.json')
 
 gen = SourceFileLoader('gen', str(GEN_PATH)).load_module()
 
@@ -41,7 +41,7 @@ def main() -> int:
         return 1
 
     payload = json.loads(CONTENT_JSON.read_text() or '{}')
-    all_archetypes = [a['id'] for a in gen.ARCHETYPES]
+    all_archetypes = [row[0] for row in gen.ARCHETYPES]  # tuple: (id, name, ...)
     missing_or_incomplete = [
         aid for aid in all_archetypes if is_incomplete(payload.get(aid, {}))
     ]
@@ -53,8 +53,8 @@ def main() -> int:
     print(f'Retrying {len(missing_or_incomplete)} archetypes: {", ".join(missing_or_incomplete)}')
     updates = 0
     for aid in missing_or_incomplete:
-        arch = next(a for a in gen.ARCHETYPES if a['id'] == aid)
-        prompt = gen.build_prompt(arch)
+        arch = next(row for row in gen.ARCHETYPES if row[0] == aid)
+        prompt = gen.build_prompt(*arch)
         t0 = time.time()
         try:
             fields = gen.call_glm(prompt, max_tokens=4000, temperature=0.6)
@@ -66,8 +66,8 @@ def main() -> int:
             print(f'  [{dt:5.1f}s] {aid}: still incomplete, skipping')
             continue
         payload[aid] = fields
-        # Preserve archetype-name ordering when writing
-        ordered = {a['id']: payload[a['id']] for a in gen.ARCHETYPES if a['id'] in payload}
+        # Preserve archetype ID ordering when writing (dict-keyed)
+        ordered = {row[0]: payload[row[0]] for row in gen.ARCHETYPES if row[0] in payload}
         CONTENT_JSON.write_text(json.dumps(ordered, indent=2))
         print(f'  [{dt:5.1f}s] {aid.capitalize():15} | {fields["oneLiner"][:60]}')
         updates += 1

@@ -16,7 +16,7 @@ from datetime import datetime
 
 REPO = Path(__file__).resolve().parent.parent
 ARCHETYPES_TS = REPO / 'src' / 'data' / 'archetypes.ts'
-CONTENT_JSON = Path('/tmp/bee-archetype-content.json')
+CONTENT_JSON = Path('/tmp/bee-archetype-content-keyed.json')
 DIFF_LOG = REPO / 'docs' / 'content-import-diff.md'
 
 

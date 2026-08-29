@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head><title>seed</title></head>
+<body style="background:#0E0E10;color:#E8A33F;padding:2em;font-family:sans-serif">
+<script>
+const token = "abhi-queen";
+const stored = {
+  result: {
+    primary: "queen",
+    secondaries: ["alchemist", "forager"],
+    shadow: "guardian",
+    balance: ["scout", "archivist"],
+    counterpartKey: "Queen",
+    scores: {
+      queen: 12, alchemist: 8, forager: 7, catalyst: 5, builder: 4,
+      archivist: 3, nurse: 2, waggle: 2, regulator: 1, hygienist: 3,
+      guardian: 0, sentinel: 1, pollinator: 2, "swarm-leader": 3, scout: 2
+    }
+  },
+  answers: {},
+  completedAt: Date.now(),
+  startedAt: Date.now() - 5 * 60 * 1000
+};
+sessionStorage.setItem(`bee-archetypes:result:${token}`, JSON.stringify(stored));
+localStorage.setItem(`bee-archetypes:result:${token}`, JSON.stringify(stored));
+
+const org = {
+  slug: "meridian",
+  name: "Meridian Growth Partners",
+  buyerPersona: "business-leader",
+  industry: "Multi-unit consumer",
+  sizeRange: "51-200",
+  currentChallenge: "growth-phase",
+  ownerEmail: "abhi@example.com",
+  createdAt: Date.now(),
+  invites: []
+};
+localStorage.setItem("bee-archetypes:orgs", JSON.stringify({ meridian: org }));
+
+document.body.innerHTML = '<h1>Seeded</h1><p><a href="/results/abhi-queen" style="color:#E8A33F">Result page</a></p><p><a href="/org/meridian/dashboard" style="color:#E8A33F">Dashboard</a></p>';
+</script>
+</body>
+</html>

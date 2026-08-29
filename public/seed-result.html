@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head><title>seed-result</title></head>
+<body style="background:#0E0E10;color:#fff;padding:2em;font-family:sans-serif">
+<script>
+const token = "demo-queen-primary";
+const result = {
+  primary: "queen",
+  secondaries: ["alchemist", "forager"],
+  shadow: "guardian",
+  balance: ["scout", "archivist"],
+  counterpartKey: "Queen",
+  scores: {
+    queen: 12, alchemist: 8, forager: 7, catalyst: 5, builder: 4,
+    archivist: 3, nurse: 2, waggle: 2, regulator: 1, hygienist: 3,
+    guardian: 0, sentinel: 1, pollinator: 2, "swarm-leader": 3, scout: 2
+  },
+  answers: {},
+  createdAt: Date.now()
+};
+sessionStorage.setItem(`bee-archetypes:result:${token}`, JSON.stringify(result));
+document.body.innerHTML = `Seeded. <a href="/results/${token}" style="color:#E8A33F">Go to results</a>`;
+setTimeout(() => { window.location.href = `/results/${token}`; }, 500);
+</script>
+</body>
+</html>
