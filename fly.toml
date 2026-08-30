@@ -24,3 +24,8 @@ primary_region = "ord"
   cpu_kind = "shared"
   cpus = 1
   memory_mb = 512
+
+[[mounts]]
+  source      = "agent_db"
+  destination = "/data"
+  initial_size = "1gb"

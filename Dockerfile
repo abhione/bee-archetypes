@@ -8,6 +8,8 @@
 
 FROM node:22-alpine AS build
 WORKDIR /app
+# better-sqlite3 needs python3 + make + g++ for native compilation
+RUN apk add --no-cache python3 make g++
 RUN corepack enable
 
 # --- deps ---

@@ -134,14 +134,54 @@ const ARCHETYPE_NAME: Record<string, string> = {
   // Swarm Leader appears in the invariants list; check if it's mapped here too.
 };
 
+// ── Onboarding questions (one set per counterpart) ──────────────────────────
+// These are asked conversationally — the agent asks them as part of the chat.
+// Keys are stored in onboarding_answers.question_key.
+export interface OnboardingQuestion {
+  key: string;
+  question: string;
+}
+
+const ONBOARDING_QUESTIONS: Record<CounterpartKey, OnboardingQuestion[]> = {
+  Queen: [
+    { key: 'current_focus',     question: "What's the biggest decision you're weighing this week?" },
+    { key: 'decision_friction', question: "When you make a hard call, what usually gets in the way of clarity?" },
+    { key: 'guardrail',         question: "One thing I should never do without asking you first?" },
+  ],
+  Catalyst: [
+    { key: 'current_risk',      question: "What project or team is most at risk of slipping this week?" },
+    { key: 'handoff_gap',       question: "Where do handoffs most often break down in your world?" },
+    { key: 'protected_rhythm',  question: "What's the one meeting or ritual you'd protect even if everything else got cut?" },
+  ],
+  Hygienist: [
+    { key: 'current_debt',   question: "What's the biggest source of invisible operational debt in your team right now?" },
+    { key: 'drift_signal',   question: "What's the warning sign that things are drifting that you tend to catch too late?" },
+    { key: 'keeper',         question: "What's the one operational habit your team has that you'd never want to lose?" },
+  ],
+};
+
+export function getOnboardingQuestions(key: CounterpartKey): OnboardingQuestion[] {
+  return ONBOARDING_QUESTIONS[key];
+}
+
+// ── Personalization context (Layer 3) ─────────────────────────────────────
+export interface PersonalizationContext {
+  questionKey: string;
+  answer: string;
+}
+
+// ── System prompt builder ─────────────────────────────────────────────────
 interface BuildOpts {
   counterpartKey: CounterpartKey;
   archetypeId: string;
   aiPairingProse: string;
+  // Wave 2: optional personalization + onboarding state
+  personalization?: PersonalizationContext[];  // answers from onboarding
+  onboardingAnswerCount?: number;              // 0,1,2 = still onboarding; 3+ = complete
 }
 
 /**
- * Assemble the system prompt. Kept short (target < 1200 tokens) so prompt
+ * Assemble the system prompt. Kept short (target < 1500 tokens) so prompt
  * caching pays off and the recurring per-turn cost stays near Haiku's floor.
  *
  * Layers, in order:
@@ -149,16 +189,19 @@ interface BuildOpts {
  *   2. Human pair   — the specific archetype the agent is paired with, plus
  *                     the Fable Wave 6b aiPairing prose describing the
  *                     Tuesday-morning division of labor
- *   3. Behavior     — how the agent behaves in this beta: terse, concrete,
+ *   3. Personalization (Wave 2) — onboarding answers as named context
+ *   4. Behavior     — how the agent behaves in this beta: terse, concrete,
  *                     no fluff, no impersonation, no fake data
- *   4. Boundaries   — safety guardrails
+ *   5. Boundaries   — safety guardrails
+ *   6. Onboarding mode (Wave 2) — if still in onboarding, inject which
+ *                     question to ask next
  */
 export function buildSystemPrompt(opts: BuildOpts): string {
   const cp = AGENTIC_COUNTERPARTS.find((c) => c.key === opts.counterpartKey);
   if (!cp) throw new Error(`unknown counterpart: ${opts.counterpartKey}`);
   const archetypeName = ARCHETYPE_NAME[opts.archetypeId] ?? opts.archetypeId;
 
-  return `You are the ${cp.name} (${cp.shortName}) from the Bee Archetypes framework by Hive Enterprises.
+  let base = `You are the ${cp.name} (${cp.shortName}) from the Bee Archetypes framework by Hive Enterprises.
 
 ## Who you are
 ${cp.strapline}
@@ -189,4 +232,38 @@ ${opts.aiPairingProse}
 - If asked to do something outside your role (write production code, run analytics, transcribe a meeting), politely name that this is a beta and the capability lives in a future version, then offer what you can do right now.
 
 This is an early beta. Own the premium feel. No apologies for being early, no warnings about AI accuracy. Just do the work.`;
+
+  // Layers 3 + 6 appended below.: Personalization — only added when onboarding is complete and
+  // answers exist. Placed AFTER boundaries so it reads as context, not
+  // instructions. Cached separately from Layer 1-2-5 since it changes per user.
+  const { personalization = [], onboardingAnswerCount = 0 } = opts;
+  const questions = ONBOARDING_QUESTIONS[opts.counterpartKey];
+  const isOnboarding = onboardingAnswerCount < questions.length;
+
+  if (!isOnboarding && personalization.length > 0) {
+    // Build a human-readable context block from the stored answers.
+    const qMap = Object.fromEntries(questions.map((q) => [q.key, q.question]));
+    const ctx = personalization
+      .map((p) => `- ${qMap[p.questionKey] ?? p.questionKey}: ${p.answer}`)
+      .join('\n');
+    base += `\n\n## What you already know about this person\n${ctx}`;
+  }
+
+  // Layer 6: Onboarding mode — tells the agent which question to ask next.
+  // Only present when onboarding is in progress. NOT cached (changes per turn).
+  if (isOnboarding) {
+    const nextQ = questions[onboardingAnswerCount];
+    const isFirst = onboardingAnswerCount === 0;
+    base += `\n\n## Onboarding mode (turn ${onboardingAnswerCount + 1} of ${questions.length})`;
+    if (isFirst) {
+      base += `\nThis is your first ever message to this person. Introduce yourself in exactly 2 sentences, then ask:\n"${nextQ.question}"\nDo not ask any other question yet. Do not explain the onboarding process.`;
+    } else {
+      base += `\nAcknowledge their previous answer in one sentence (5-10 words, no praise, just reception), then ask:\n"${nextQ.question}"\nDo not ask anything else.`;
+    }
+    if (onboardingAnswerCount === questions.length - 1) {
+      base += `\nAfter this question is answered (in the NEXT turn), onboarding is complete. You will then have full context and can do your actual work.`;
+    }
+  }
+
+  return base;
 }

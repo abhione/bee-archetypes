@@ -59,3 +59,7 @@ MISSION-*.md
 
 # Server build output
 dist-server
+dev-agent.db
+dev-agent.db-shm
+dev-agent.db-wal
+.npmrc
