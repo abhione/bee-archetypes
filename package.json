@@ -10,13 +10,22 @@
     "lint": "eslint .",
     "check:data": "tsx scripts/check-archetype-invariants.ts",
     "gen:content": "tsx scripts/generate-archetype-content.ts",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build:all": "pnpm build && pnpm build:server",
+    "start:server": "node dist-server/index.js",
+    "dev:server": "tsx server/index.ts",
+    "typecheck:server": "tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.122.0",
+    "@clerk/backend": "^3.16.13",
     "@clerk/clerk-react": "^5.20.0",
+    "@hono/node-server": "^2.1.1",
     "@tanstack/react-query": "^5.62.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
+    "hono": "^4.13.5",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

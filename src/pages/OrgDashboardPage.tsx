@@ -20,7 +20,18 @@ import {
   type DemoMember,
 } from '@/data/demoTeam';
 import { AlertTriangle, Users, Sparkles } from 'lucide-react';
-import { useOrganization } from '@clerk/clerk-react';
+import { useOrganization, useUser } from '@clerk/clerk-react';
+import { CounterpartPanel } from '@/components/CounterpartPanel';
+
+const COUNTERPART_ENABLED = import.meta.env.VITE_COUNTERPART_ENABLED !== 'false';
+
+// Server-side mirror lives in server/agents/prompts.ts. Keep the two in sync
+// (only 15 rows) when new archetypes are added.
+const ARCHETYPE_TO_COUNTERPART: Record<string, 'Queen' | 'Catalyst' | 'Hygienist'> = {
+  queen: 'Queen', forager: 'Queen', alchemist: 'Queen', pollinator: 'Queen', scout: 'Queen',
+  builder: 'Catalyst', catalyst: 'Catalyst', archivist: 'Catalyst', nurse: 'Catalyst', waggle: 'Catalyst', regulator: 'Catalyst',
+  hygienist: 'Hygienist', guardian: 'Hygienist', sentinel: 'Hygienist',
+};
 
 type DataMode = 'demo' | 'live';
 
@@ -367,6 +378,21 @@ export default function OrgDashboardPage() {
               : 'The capacity read on your hive'
           }
         />
+        {(() => {
+          const { user } = useUser();
+          void user; // Wave 2: pull user's own archetype; for Wave 1 default per persona.
+          const defaultArchetypeId = persona.id === 'business-leader' ? 'queen' : 'nurse';
+          const defaultCounterpart = ARCHETYPE_TO_COUNTERPART[defaultArchetypeId];
+          const defaultArchetypeName = getArchetype(defaultArchetypeId as ArchetypeId).name;
+          return COUNTERPART_ENABLED && defaultCounterpart ? (
+            <CounterpartPanel
+              archetypeId={defaultArchetypeId}
+              counterpartKey={defaultCounterpart}
+              archetypeName={defaultArchetypeName}
+            />
+          ) : null;
+        })()}
+
         <div className="mt-6 rounded-card border border-hive-slate/50 bg-hive-charcoal/60 p-6 sm:p-8 md:p-10">
           <ExecutiveReadout
             personaId={persona.id}
