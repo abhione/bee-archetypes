@@ -209,19 +209,23 @@ const SCENARIOS: Scenario[] = [
 
 // ── HTTP helpers ─────────────────────────────────────────────────────────────
 
-function httpPost(url: string, headers: Record<string, string>, body: object): Promise<object> {
+function httpRequest(
+  method: 'GET' | 'POST',
+  url: string,
+  headers: Record<string, string>,
+  body?: object,
+): Promise<object> {
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify(body);
+    const payload = body ? JSON.stringify(body) : null;
     const parsed = new URL(url);
     const isHttps = parsed.protocol === 'https:';
     const options: http.RequestOptions = {
       hostname: parsed.hostname,
       port: parsed.port || (isHttps ? 443 : 80),
       path: parsed.pathname + parsed.search,
-      method: 'POST',
+      method,
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload),
+        ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
         ...headers,
       },
     };
@@ -238,9 +242,17 @@ function httpPost(url: string, headers: Record<string, string>, body: object): P
       });
     });
     req.on('error', reject);
-    req.write(payload);
+    if (payload) req.write(payload);
     req.end();
   });
+}
+
+function httpPost(url: string, headers: Record<string, string>, body: object): Promise<object> {
+  return httpRequest('POST', url, headers, body);
+}
+
+function httpGet(url: string, headers: Record<string, string>): Promise<object> {
+  return httpRequest('GET', url, headers);
 }
 
 // ── Call live /api/agent/chat ─────────────────────────────────────────────────
@@ -353,7 +365,7 @@ Return ONLY a valid JSON object with these exact keys and no other text:
 
   const glmBody = {
     model: 'glm-4.6',
-    max_tokens: 600,
+    max_tokens: 3000,  // GLM needs budget for reasoning THEN the JSON answer
     temperature: 0.1,
     messages: [
       {
@@ -368,7 +380,10 @@ Return ONLY a valid JSON object with these exact keys and no other text:
     error?: object;
   };
 
-  const raw = res.choices?.[0]?.message?.content?.trim() ?? '';
+  // GLM uses --reasoning-format deepseek: answer lives in `content`;
+  // fall back to `reasoning_content` if `content` is empty (thinking ate the budget).
+  const msg = res.choices?.[0]?.message;
+  const raw = (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? '';
   // Strip any markdown fences GLM might add
   const jsonStr = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
 
@@ -483,10 +498,9 @@ async function main() {
   // Quick connectivity check
   try {
     const basicAuth = Buffer.from(`${SITE_USER}:${SITE_PASS}`).toString('base64');
-    const res = await httpPost(
+    const res = await httpGet(
       `${TARGET}/api/agent/status`,
       { Authorization: `Basic ${basicAuth}` },
-      {},
     ) as { ok?: boolean; anthropicConfigured?: boolean };
     if (!res.ok || !res.anthropicConfigured) {
       console.error('❌  /api/agent/status not ok — is the site up?', res);
@@ -500,9 +514,8 @@ async function main() {
 
   // Check GLM is up
   try {
-    const glmHealth = await httpPost(
+    const glmHealth = await httpGet(
       GLM_URL.replace('/v1/chat/completions', '/health'),
-      {},
       {},
     ) as { status?: string };
     if (glmHealth.status !== 'ok') throw new Error('non-ok status');
