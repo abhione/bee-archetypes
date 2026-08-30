@@ -56,3 +56,6 @@ public/seed-*.html
 # Local demo assets
 public/demo-*
 MISSION-*.md
+
+# Server build output
+dist-server

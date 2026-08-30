@@ -15,7 +15,8 @@
     "build:all": "pnpm build && pnpm build:server",
     "start:server": "node dist-server/index.js",
     "dev:server": "tsx server/index.ts",
-    "typecheck:server": "tsc -p tsconfig.server.json --noEmit"
+    "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
+    "qa:gate": "tsx scripts/qa-gate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

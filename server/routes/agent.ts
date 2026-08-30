@@ -74,20 +74,31 @@ export function registerAgentRoutes(app: Hono) {
       return c.json({ error: 'agent_not_configured' }, 500);
     }
 
-    // ---- 1. Clerk auth ----
-    const authHeader = c.req.header('x-clerk-auth-token') ?? '';
-    const clerkToken = authHeader.replace(/^Bearer\s+/i, '').trim();
-    if (!clerkToken) {
-      return c.json({ error: 'missing_clerk_token' }, 401);
-    }
+    // ---- 1. Auth: Clerk JWT OR QA bearer ----
+    // QA path: only active when QA_BEARER_TOKEN is set as an env var. Any
+    // request with x-qa-bearer matching that token is admitted under a
+    // synthetic user id for rate-limiting. Never trust this path in prod
+    // unless we've explicitly set the env var.
     let userId: string;
-    try {
-      if (!clerkSecretKey) throw new Error('no clerk secret');
-      const verified = await verifyToken(clerkToken, { secretKey: clerkSecretKey });
-      userId = verified.sub;
-    } catch (err) {
-      console.warn('[agent/chat] clerk verify failed', err);
-      return c.json({ error: 'invalid_clerk_token' }, 401);
+    const qaTokenEnv = process.env.QA_BEARER_TOKEN;
+    const qaHeader = c.req.header('x-qa-bearer') ?? '';
+    const qaToken = qaHeader.replace(/^Bearer\s+/i, '').trim();
+    if (qaTokenEnv && qaToken && qaToken === qaTokenEnv) {
+      userId = 'qa-runner';
+    } else {
+      const authHeader = c.req.header('x-clerk-auth-token') ?? '';
+      const clerkToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (!clerkToken) {
+        return c.json({ error: 'missing_clerk_token' }, 401);
+      }
+      try {
+        if (!clerkSecretKey) throw new Error('no clerk secret');
+        const verified = await verifyToken(clerkToken, { secretKey: clerkSecretKey });
+        userId = verified.sub;
+      } catch (err) {
+        console.warn('[agent/chat] clerk verify failed', err);
+        return c.json({ error: 'invalid_clerk_token' }, 401);
+      }
     }
 
     // ---- 2. Rate limit ----
