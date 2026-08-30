@@ -33,6 +33,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV DIST_DIR=/app/dist
+# better-sqlite3 native module needs python3/make/g++ at runtime install too
+RUN apk add --no-cache python3 make g++
 RUN corepack enable
 
 # Only ship prod deps to the runtime image.
