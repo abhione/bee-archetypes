@@ -239,9 +239,9 @@ export default function ResultsPage() {
         </div>
       </section>
 
-      {/* Agentic Counterpart */}
+      {/* Hive Copilot */}
       <section className="mt-24">
-        <SectionHeader kicker="The AI pairing" title={`Your Agentic Counterpart: the ${counterpart.name}`} />
+        <SectionHeader kicker="Your Hive Copilot" title={`Meet the ${counterpart.name}`} />
         <div className="mt-8 rounded-card border border-hive-honey/40 bg-gradient-to-br from-hive-honey/10 via-hive-charcoal/60 to-hive-charcoal/60 p-8 md:p-10">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-pill bg-hive-honey/20 border border-hive-honey/40 flex items-center justify-center">
@@ -267,6 +267,31 @@ export default function ResultsPage() {
           <p className="mt-6 text-xs uppercase tracking-widest text-hive-mist">
             Q1 2027 · Hive Leadership OS
           </p>
+        </div>
+
+        {/* Copilot chat CTA */}
+        <div className="mt-6 rounded-card bg-hive-charcoal/60 border border-hive-honey/30 p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex-1">
+            <p className="text-sm uppercase tracking-widest text-hive-honey">
+              Talk to your Copilot · beta
+            </p>
+            <h3 className="mt-2 font-serif text-2xl text-hive-cream">
+              Ask the {counterpart.name} your first question.
+            </h3>
+            <p className="mt-3 text-hive-mist leading-relaxed">
+              Bring a real decision, a stuck team, or a week that got away from you.
+              The Copilot is tuned to how the {primary.name} archetype does its best work.
+            </p>
+          </div>
+          <a
+            href={`https://t.me/HiveCopilotBot?start=${counterpart.key.toLowerCase()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors group whitespace-nowrap"
+          >
+            Chat on Telegram
+            <span className="transition-transform group-hover:translate-x-0.5">→</span>
+          </a>
         </div>
       </section>
 

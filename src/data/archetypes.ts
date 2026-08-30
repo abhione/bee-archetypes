@@ -6,8 +6,8 @@
  * balance, aiPairing) authored via GLM-4.6 in Wave 2a and validated by
  * scripts/check-archetype-invariants.ts.
  *
- * The Agentic Counterpart maps each archetype to one of the three Q1 2027
- * Agentic Counterparts (Queen / Catalyst / Hygienist) per the PRFAQ v2.
+ * The Hive Copilot maps each archetype to one of three Q1 2027 copilots
+ * (Queen / Catalyst / Hygienist) per the PRFAQ v2.
  */
 
 export type SystemId = 'sun' | 'comb' | 'brood' | 'guard' | 'swarm';

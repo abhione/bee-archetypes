@@ -59,8 +59,9 @@ export default function LandingPage() {
             <span className="honey-underline">flows through you</span>.
           </h1>
           <p className="mt-8 text-xl text-hive-mist max-w-2xl leading-relaxed">
-            A three-minute assessment that names your natural contribution, then pairs it
-            with the Agentic Counterpart that would amplify it most.
+            A three-minute assessment names your natural contribution, then pairs you with a
+            <span className="text-hive-cream"> Hive Copilot</span> — an AI teammate tuned to
+            amplify your archetype in the work you already do.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Link
@@ -94,8 +95,8 @@ export default function LandingPage() {
             Fifteen archetypes across five systems
           </p>
           <h2 className="mt-3 font-serif text-3xl md:text-4xl text-hive-cream max-w-2xl">
-            Every archetype pairs with an{' '}
-            <span className="italic text-hive-honey">Agentic Counterpart</span>.
+            Every archetype pairs with a{' '}
+            <span className="italic text-hive-honey">Hive Copilot</span>.
           </h2>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

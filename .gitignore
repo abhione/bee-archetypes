@@ -63,3 +63,8 @@ dev-agent.db
 dev-agent.db-shm
 dev-agent.db-wal
 .npmrc
+
+# Session/audit noise
+.env.qa
+.omc/
+docs/audits/qa-gate-*.json
