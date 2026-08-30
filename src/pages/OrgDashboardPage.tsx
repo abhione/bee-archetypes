@@ -19,7 +19,7 @@ import {
   type DemoMember,
 } from '@/data/demoTeam';
 import { AlertTriangle, Sparkles, UserPlus } from 'lucide-react';
-import { useOrganization, useUser, useAuth } from '@clerk/clerk-react';
+import { useOrganization, useAuth } from '@clerk/clerk-react';
 import { CounterpartPanel } from '@/components/CounterpartPanel';
 
 const COUNTERPART_ENABLED = import.meta.env.VITE_COUNTERPART_ENABLED !== 'false';
@@ -159,6 +159,11 @@ export default function OrgDashboardPage() {
 
   const persona = getBuyerPersona(org.buyerPersona);
   const completedCount = activeTeam.length;
+
+  // Counterpart defaults — derived from buyer persona (Wave 1; Wave 2 will use user's own result)
+  const counterpartArchetypeId = persona.id === 'business-leader' ? 'queen' : 'nurse';
+  const counterpartKey = ARCHETYPE_TO_COUNTERPART[counterpartArchetypeId];
+  const counterpartArchetypeName = getArchetype(counterpartArchetypeId as ArchetypeId).name;
 
   return (
     <div className="mx-auto max-w-7xl px-6 pt-10 pb-24">
@@ -396,20 +401,13 @@ export default function OrgDashboardPage() {
               : 'The capacity read on your hive'
           }
         />
-        {(() => {
-          const { user } = useUser();
-          void user; // Wave 2: pull user's own archetype; for Wave 1 default per persona.
-          const defaultArchetypeId = persona.id === 'business-leader' ? 'queen' : 'nurse';
-          const defaultCounterpart = ARCHETYPE_TO_COUNTERPART[defaultArchetypeId];
-          const defaultArchetypeName = getArchetype(defaultArchetypeId as ArchetypeId).name;
-          return COUNTERPART_ENABLED && defaultCounterpart ? (
-            <CounterpartPanel
-              archetypeId={defaultArchetypeId}
-              counterpartKey={defaultCounterpart}
-              archetypeName={defaultArchetypeName}
-            />
-          ) : null;
-        })()}
+        {COUNTERPART_ENABLED && counterpartKey && (
+          <CounterpartPanel
+            archetypeId={counterpartArchetypeId}
+            counterpartKey={counterpartKey}
+            archetypeName={counterpartArchetypeName}
+          />
+        )}
 
         <div className="mt-6 rounded-card border border-hive-slate/50 bg-hive-charcoal/60 p-6 sm:p-8 md:p-10">
           <ExecutiveReadout
