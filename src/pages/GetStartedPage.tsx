@@ -73,8 +73,8 @@ export default function GetStartedPage() {
   const { organization: activeOrganization } = useOrganization();
 
   const [step, setStep] = useState<Step>('persona');
-  const [, setSubmitting] = useState(false);
-  const [, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Persona step
   const [persona, setPersona] = useState<BuyerPersonaId | null>(null);
@@ -164,12 +164,16 @@ export default function GetStartedPage() {
       if (CLERK_ENABLED && activeOrganization?.id === createdOrgId) {
         // Real Clerk invites. Loop, swallow individual errors so a single
         // typo doesn't kill the whole batch.
+        const failedEmails: string[] = [];
         for (const emailAddress of emails) {
           try {
             await activeOrganization.inviteMember({ emailAddress, role: 'org:member' });
           } catch {
-            /* individual invite failed; skip silently for beta */
+            failedEmails.push(emailAddress);
           }
+        }
+        if (failedEmails.length > 0) {
+          setError(`Could not invite: ${failedEmails.join(', ')} — the rest succeeded.`);
         }
       } else if (createdOrgSlug) {
         // Fallback: localStorage-backed (preview mode without Clerk).
@@ -357,12 +361,15 @@ export default function GetStartedPage() {
               <button
                 type="button"
                 onClick={handleCreateOrg}
-                disabled={!canProceedOrg}
+                disabled={submitting || !canProceedOrg}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
-                Create hive
+                {submitting ? 'Working…' : 'Create hive'}
                 <ChevronRight className="w-4 h-4" />
               </button>
+              {error && (
+                <p className="mt-3 text-sm text-red-400/90" role="alert">{error}</p>
+              )}
             </div>
           </motion.div>
         )}
@@ -412,11 +419,15 @@ export default function GetStartedPage() {
               <button
                 type="button"
                 onClick={handleInvites}
+                disabled={submitting}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"
               >
-                Send invites
+                {submitting ? 'Working…' : 'Send invites'}
                 <ChevronRight className="w-4 h-4" />
               </button>
+              {error && (
+                <p className="mt-3 text-sm text-red-400/90" role="alert">{error}</p>
+              )}
             </div>
           </motion.div>
         )}

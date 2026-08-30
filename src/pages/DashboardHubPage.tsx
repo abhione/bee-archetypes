@@ -4,7 +4,7 @@ import {
   useUser,
   OrganizationSwitcher,
 } from '@clerk/clerk-react';
-import { Plus, Building2, ChevronRight } from 'lucide-react';
+import { Plus, Building2, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 /**
@@ -126,20 +126,22 @@ export default function DashboardHubPage() {
         )}
 
         {isLoaded && orgs.length === 0 && (
-          <div className="p-10 md:p-16 rounded-card border border-hive-honey/40 bg-gradient-to-br from-hive-honey/10 to-hive-charcoal/60 text-center">
+          <div className="p-8 rounded-card border border-hive-slate/40 bg-hive-charcoal/40 text-center">
+            <div className="w-16 h-16 rounded-pill bg-hive-honey/10 border border-hive-honey/40 mx-auto flex items-center justify-center mb-6">
+              <Sparkles className="w-8 h-8 text-hive-honey" />
+            </div>
             <h2 className="font-serif text-3xl text-hive-cream mb-3">
-              Your first hive.
+              No hives yet.
             </h2>
             <p className="text-hive-mist mb-8 max-w-lg mx-auto">
-              A hive is your team's shared space. Create one, invite your operators,
-              and see how work actually flows through your org.
+              Start your first hive to bring the Bee Archetypes to your team.
             </p>
             <Link
               to="/get-started"
               className="inline-flex items-center gap-2 px-8 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"
             >
-              <Plus className="w-4 h-4" />
-              Create your first hive
+              Bring to your team
+              <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         )}

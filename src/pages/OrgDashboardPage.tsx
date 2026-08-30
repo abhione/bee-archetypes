@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { getOrg, type Org } from '@/data/orgStore';
+import { getOrg, getOrgMetadata, type Org } from '@/data/orgStore';
 import { getBuyerPersona } from '@/data/buyerPersonas';
 import {
   ARCHETYPES,
@@ -20,24 +20,53 @@ import {
   type DemoMember,
 } from '@/data/demoTeam';
 import { AlertTriangle, Users, Sparkles } from 'lucide-react';
+import { useOrganization } from '@clerk/clerk-react';
 
 type DataMode = 'demo' | 'live';
 
+const CLERK_ENABLED = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
 export default function OrgDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { organization: clerkOrg, isLoaded: clerkOrgLoaded } = useOrganization();
   const [org, setOrg] = useState<Org | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dataMode, setDataMode] = useState<DataMode>('demo');
 
   useEffect(() => {
     if (!slug) {
       setNotFound(true);
+      setLoading(false);
       return;
+    }
+    if (CLERK_ENABLED) {
+      // Wait until Clerk finishes hydrating so we don't false-negative.
+      if (!clerkOrgLoaded) return;
+      if (clerkOrg && clerkOrg.slug === slug) {
+        const meta = getOrgMetadata(clerkOrg.id);
+        const synthesized: Org = {
+          slug: clerkOrg.slug ?? slug,
+          name: clerkOrg.name,
+          buyerPersona: meta?.buyerPersona ?? 'people-leader',
+          industry: meta?.industry ?? '',
+          sizeRange: meta?.sizeRange ?? '11-50',
+          currentChallenge: meta?.currentChallenge ?? 'growth-phase',
+          ownerEmail: '',
+          createdAt: clerkOrg.createdAt?.getTime?.() ?? Date.now(),
+          invites: [],
+        };
+        setOrg(synthesized);
+        setLoading(false);
+        return;
+      }
+      // Fall through to legacy localStorage lookup for orgs created before Clerk was wired.
     }
     const o = getOrg(slug);
     if (o) setOrg(o);
     else setNotFound(true);
-  }, [slug]);
+    setLoading(false);
+  }, [slug, clerkOrg, clerkOrgLoaded]);
 
   const activeTeam: readonly DemoMember[] = useMemo(() => {
     // Live mode: promote completed invitees to team members.
@@ -64,6 +93,14 @@ export default function OrgDashboardPage() {
 
   const coverage = useMemo(() => computeCoverage(activeTeam), [activeTeam]);
   const missing = useMemo(() => computeMissingArchetypes(activeTeam), [activeTeam]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl px-6 pt-12 pb-24">
+        <p className="text-hive-mist">Loading your hive…</p>
+      </div>
+    );
+  }
 
   if (notFound) {
     return (

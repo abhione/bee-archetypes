@@ -1,0 +1,35 @@
+=== reasoning ===
+(none)
+
+=== content ===
+# GLM AUDIT — bee-archetypes Wave 6
+
+## Ready to use?
+Yes with caveats — Core auth and org creation work, but localStorage-only metadata and silent invite failures could confuse beta users.
+
+## Blocking issues (must fix before real users)
+- [src/pages/GetStartedPage.tsx:274] Silent invite failures — `handleInvites` swallows all errors, leaving users unaware if invites failed — Add user feedback for failed invites.
+- [src/pages/GetStartedPage.tsx:274] Race condition in `handleInvites` — If `activeOrganization` changes between org creation and invite step, invites may target wrong org — Capture org ID at creation time and use it consistently.
+- [src/data/orgStore.ts:159] Unsafe localStorage writes — `saveOrgMetadata` ignores errors; if localStorage is full, metadata is silently lost — Add error handling and user notification.
+- [src/pages/OrgDashboardPage.tsx:21] Inconsistent data source — Dashboard reads from localStorage `getOrg(slug)` but Clerk orgs use slug fallback to ID — Ensure slug/ID mapping is consistent or use Clerk's `organization` from context.
+
+## Non-blocking issues (should fix Wave 7)
+- [src/components/ProtectedRoute.tsx:35] Stub mode bypasses auth — While documented, stub mode renders children without auth checks; ensure it's disabled in production builds — Add compile-time guard.
+- [src/data/orgStore.ts:95] Slug collision logic is naive — Sequential numeric suffixes may still collide under rapid concurrent creates — Use UUID or timestamp suffix.
+- [src/pages/GetStartedPage.tsx:318] Missing error UI — `setError` state is set but never displayed to users — Render error messages in the wizard.
+- [src/pages/OrgDashboardPage.tsx:21] No loading state for org fetch — Dashboard shows nothing while loading org from localStorage — Add loading spinner.
+- [src/pages/DashboardHubPage.tsx:30] Missing null guard for `user.firstName` — Could crash if user object lacks firstName — Use optional chaining or default string.
+
+## Nits (optional)
+- [src/pages/GetStartedPage.tsx:318] Unused state `setError`/`setSubmitting` — Remove or wire them to UI.
+- [src/data/orgStore.ts:159] Inconsistent error handling — Some localStorage helpers ignore errors, others throw — Standardize error handling pattern.
+- [src/pages/OrgDashboardPage.tsx:21] Redundant `notFound` state — Can derive from `org === null` after load — Simplify state.
+
+## Notable good decisions
+- Clerk stub mode enables local dev without backend.
+- Clear separation of Clerk identity vs localStorage metadata.
+- Graceful fallback for org slug to ID in links.
+- Comprehensive TypeScript types for org data.
+
+=== usage ===
+prompt=15298 completion=592 total=15890 finish=stop
