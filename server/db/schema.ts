@@ -13,6 +13,26 @@ import type Database from 'better-sqlite3';
 
 const MIGRATIONS: { version: number; sql: string }[] = [
   {
+    version: 2,
+    sql: `
+      CREATE TABLE IF NOT EXISTS org_members (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        clerk_user_id   TEXT NOT NULL,
+        clerk_org_id    TEXT NOT NULL,
+        display_name    TEXT NOT NULL DEFAULT '',
+        email           TEXT NOT NULL DEFAULT '',
+        archetype_id    TEXT NOT NULL,
+        secondary_1     TEXT NOT NULL,
+        secondary_2     TEXT NOT NULL,
+        shadow_id       TEXT NOT NULL,
+        counterpart_key TEXT NOT NULL,
+        submitted_at    INTEGER NOT NULL,
+        UNIQUE(clerk_user_id, clerk_org_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_org_members_org ON org_members(clerk_org_id, submitted_at DESC);
+    `,
+  },
+  {
     version: 1,
     sql: `
       CREATE TABLE IF NOT EXISTS users (

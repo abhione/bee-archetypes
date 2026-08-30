@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -14,13 +14,12 @@ import {
   type ArchetypeId,
 } from '@/data/archetypes';
 import {
-  DEMO_TEAM,
   computeCoverage,
   computeMissingArchetypes,
   type DemoMember,
 } from '@/data/demoTeam';
-import { AlertTriangle, Users, Sparkles } from 'lucide-react';
-import { useOrganization, useUser } from '@clerk/clerk-react';
+import { AlertTriangle, Sparkles, UserPlus } from 'lucide-react';
+import { useOrganization, useUser, useAuth } from '@clerk/clerk-react';
 import { CounterpartPanel } from '@/components/CounterpartPanel';
 
 const COUNTERPART_ENABLED = import.meta.env.VITE_COUNTERPART_ENABLED !== 'false';
@@ -33,8 +32,6 @@ const ARCHETYPE_TO_COUNTERPART: Record<string, 'Queen' | 'Catalyst' | 'Hygienist
   hygienist: 'Hygienist', guardian: 'Hygienist', sentinel: 'Hygienist',
 };
 
-type DataMode = 'demo' | 'live';
-
 const CLERK_ENABLED = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export default function OrgDashboardPage() {
@@ -43,7 +40,10 @@ export default function OrgDashboardPage() {
   const [org, setOrg] = useState<Org | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [dataMode, setDataMode] = useState<DataMode>('demo');
+  const [realMembers, setRealMembers] = useState<DemoMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+
+  const { getToken } = useAuth();
 
   useEffect(() => {
     if (!slug) {
@@ -79,28 +79,48 @@ export default function OrgDashboardPage() {
     setLoading(false);
   }, [slug, clerkOrg, clerkOrgLoaded]);
 
-  const activeTeam: readonly DemoMember[] = useMemo(() => {
-    // Live mode: promote completed invitees to team members.
-    // In beta all invites are unfilled so live mode is empty. Demo mode always
-    // shows the seeded 12-person team.
-    if (dataMode === 'demo') return DEMO_TEAM;
-    if (!org) return [];
-    const live: DemoMember[] = [];
-    for (const inv of org.invites) {
-      if (inv.completedAt && inv.archetypeId) {
-        live.push({
-          id: `inv-${inv.email}`,
-          name: inv.email.split('@')[0].replace('.', ' '),
-          title: inv.role ?? 'Team member',
-          archetype: inv.archetypeId as ArchetypeId,
-          secondaries: ['catalyst', 'scout'] as [ArchetypeId, ArchetypeId],
-          shadow: 'guardian',
-          completedAt: inv.completedAt - Date.now(),
-        });
-      }
+  // Fetch real assessed members from the server whenever the Clerk org is known.
+  const fetchMembers = useCallback(async (clerkOrgId: string) => {
+    setMembersLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`/api/org/members?clerkOrgId=${encodeURIComponent(clerkOrgId)}`, {
+        headers: { 'X-Clerk-Auth-Token': `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as {
+        members: {
+          clerkUserId: string;
+          displayName: string;
+          email: string;
+          archetypeId: string;
+          secondaries: [string, string];
+          shadowId: string;
+          submittedAt: number;
+        }[];
+      };
+      setRealMembers(data.members.map((m) => ({
+        id: m.clerkUserId,
+        name: m.displayName || m.email.split('@')[0] || 'Team member',
+        title: 'Team member',
+        archetype: m.archetypeId as ArchetypeId,
+        secondaries: m.secondaries as [ArchetypeId, ArchetypeId],
+        shadow: m.shadowId as ArchetypeId,
+        completedAt: m.submittedAt - Date.now(),
+      })));
+    } catch (err) {
+      console.warn('[dashboard] failed to fetch members', err);
+    } finally {
+      setMembersLoading(false);
     }
-    return live;
-  }, [dataMode, org]);
+  }, [getToken]);
+
+  useEffect(() => {
+    if (clerkOrg?.id) fetchMembers(clerkOrg.id);
+  }, [clerkOrg?.id, fetchMembers]);
+
+  const activeTeam: readonly DemoMember[] = realMembers;
 
   const coverage = useMemo(() => computeCoverage(activeTeam), [activeTeam]);
   const missing = useMemo(() => computeMissingArchetypes(activeTeam), [activeTeam]);
@@ -139,7 +159,6 @@ export default function OrgDashboardPage() {
 
   const persona = getBuyerPersona(org.buyerPersona);
   const completedCount = activeTeam.length;
-  const invitedCount = org.invites.length;
 
   return (
     <div className="mx-auto max-w-7xl px-6 pt-10 pb-24">
@@ -161,15 +180,9 @@ export default function OrgDashboardPage() {
             {org.industry} · {org.sizeRange} people
           </p>
         </div>
-        <ModeToggle
-          mode={dataMode}
-          onChange={setDataMode}
-          demoTeamSize={DEMO_TEAM.length}
-          liveTeamSize={
-            org.invites.filter((i) => i.completedAt).length
-          }
-          invitedCount={invitedCount}
-        />
+        <div className="text-xs text-hive-mist">
+          {membersLoading ? 'Loading team…' : `${activeTeam.length} assessed`}
+        </div>
       </motion.header>
 
       {/* Hero readout */}
@@ -321,9 +334,11 @@ export default function OrgDashboardPage() {
                 })}
                 {activeTeam.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-hive-mist italic">
-                      No live results yet. Toggle to demo mode to preview what
-                      this becomes.
+                    <td colSpan={5} className="py-12 text-center">
+                      <p className="text-hive-mist italic mb-3">No team members have completed their assessment yet.</p>
+                      <Link to="/get-started" className="inline-flex items-center gap-2 text-hive-honey text-sm hover:underline">
+                        <UserPlus className="w-4 h-4" /> Invite your team
+                      </Link>
                     </td>
                   </tr>
                 )}
@@ -356,9 +371,12 @@ export default function OrgDashboardPage() {
               );
             })}
             {activeTeam.length === 0 && (
-              <p className="p-8 text-center text-hive-mist italic text-sm">
-                No live results yet. Toggle to demo mode to preview what this becomes.
-              </p>
+              <div className="p-8 text-center">
+                <p className="text-hive-mist italic text-sm mb-3">No team members have completed their assessment yet.</p>
+                <Link to="/get-started" className="inline-flex items-center gap-2 text-hive-honey text-sm hover:underline">
+                  <UserPlus className="w-4 h-4" /> Invite your team to take the assessment
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -489,51 +507,7 @@ function SystemCard({
   );
 }
 
-function ModeToggle({
-  mode,
-  onChange,
-  demoTeamSize,
-  liveTeamSize,
-  invitedCount,
-}: {
-  mode: DataMode;
-  onChange: (m: DataMode) => void;
-  demoTeamSize: number;
-  liveTeamSize: number;
-  invitedCount: number;
-}) {
-  return (
-    <div className="flex flex-col items-end">
-      <div className="inline-flex rounded-pill border border-hive-slate/60 overflow-hidden">
-        {(['demo', 'live'] as const).map((m) => {
-          const isActive = mode === m;
-          const count = m === 'demo' ? demoTeamSize : liveTeamSize;
-          return (
-            <button
-              key={m}
-              type="button"
-              onClick={() => onChange(m)}
-              className={cn(
-                'px-4 py-1.5 text-xs uppercase tracking-widest transition-colors flex items-center gap-2',
-                isActive
-                  ? 'bg-hive-honey text-hive-black font-medium'
-                  : 'text-hive-mist hover:text-hive-cream hover:bg-hive-charcoal',
-              )}
-            >
-              <Users className="w-3 h-3" />
-              <span className="hidden sm:inline">{m} · </span>{count}
-            </button>
-          );
-        })}
-      </div>
-      {invitedCount > 0 && (
-        <p className="mt-2 text-xs text-hive-mist italic">
-          {invitedCount} invitee{invitedCount === 1 ? '' : 's'} awaiting completion
-        </p>
-      )}
-    </div>
-  );
-}
+
 
 function ExecutiveReadout({
   personaId,

@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router';
+import { useAuth, useOrganizationList } from '@clerk/clerk-react';
 import { motion } from 'framer-motion';
 import {
   ARCHETYPES,
@@ -40,6 +41,12 @@ export default function ResultsPage() {
   const [stored, setStored] = useState<StoredResult | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle'|'submitting'|'done'|'error'>('idle');
+
+  const { getToken, isSignedIn } = useAuth();
+  const { userMemberships, isLoaded: orgsLoaded } = useOrganizationList({
+    userMemberships: { infinite: false, pageSize: 5 },
+  });
 
   useEffect(() => {
     if (!token) {
@@ -50,6 +57,56 @@ export default function ResultsPage() {
     if (s) setStored(s);
     else setNotFound(true);
   }, [token]);
+
+  // Auto-submit to every org the user belongs to, once result + orgs are loaded.
+  const submitToOrgs = useCallback(async (s: StoredResult) => {
+    if (!isSignedIn || !orgsLoaded) return;
+    const orgs = userMemberships?.data ?? [];
+    if (orgs.length === 0) return;
+    if (submitStatus !== 'idle') return;
+
+    setSubmitStatus('submitting');
+    try {
+      const clerkToken = await getToken();
+      if (!clerkToken) throw new Error('no token');
+
+      await Promise.all(orgs.map(async (membership) => {
+        const org = membership.organization;
+        const user = membership.publicUserData;
+        const body = {
+          clerkOrgId:    org.id,
+          archetypeId:   s.result.primary,
+          secondary1:    s.result.secondaries[0],
+          secondary2:    s.result.secondaries[1],
+          shadowId:      s.result.shadow,
+          counterpartKey: s.result.counterpartKey,
+          displayName:   user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : (user?.identifier ?? ''),
+          email:         user?.identifier ?? '',
+        };
+        const res = await fetch('/api/org/members/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Clerk-Auth-Token': `Bearer ${clerkToken}`,
+          },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) console.warn('[results] submit failed for org', org.id, await res.text());
+      }));
+      setSubmitStatus('done');
+    } catch (err) {
+      console.warn('[results] submit error', err);
+      setSubmitStatus('error');
+    }
+  }, [getToken, isSignedIn, orgsLoaded, userMemberships, submitStatus]);
+
+  useEffect(() => {
+    if (stored && isSignedIn && orgsLoaded && submitStatus === 'idle') {
+      submitToOrgs(stored);
+    }
+  }, [stored, isSignedIn, orgsLoaded, submitStatus, submitToOrgs]);
 
   const shareUrl = useMemo(
     () => (typeof window !== 'undefined' && token ? `${window.location.origin}/results/${token}` : ''),

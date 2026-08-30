@@ -22,6 +22,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { registerAgentRoutes } from './routes/agent.js';
+import { registerOrgMemberRoutes } from './routes/orgMembers.js';
 import { basicAuthMiddleware } from './middleware/basicAuth.js';
 
 const PORT = Number(process.env.PORT ?? 8080);
@@ -36,6 +37,7 @@ app.use('*', basicAuthMiddleware);
 
 // API routes go under /api. Mount before the static-file fallback.
 registerAgentRoutes(app);
+registerOrgMemberRoutes(app);
 
 // Health check for Fly's smoke tests.
 app.get('/api/health', (c) => c.json({ ok: true, ts: Date.now() }));
