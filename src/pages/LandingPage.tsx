@@ -71,8 +71,15 @@ export default function LandingPage() {
               <span className="transition-transform group-hover:translate-x-0.5">→</span>
             </Link>
             <Link
+              to="/get-started"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-pill border border-hive-slate/60 text-hive-cream hover:border-hive-honey hover:text-hive-honey transition-colors group"
+            >
+              For teams
+              <span className="transition-transform group-hover:translate-x-0.5">→</span>
+            </Link>
+            <Link
               to="/method"
-              className="inline-flex items-center gap-2 px-6 py-3 text-hive-cream hover:text-hive-honey transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-3 text-hive-mist hover:text-hive-cream transition-colors"
             >
               Read the method
             </Link>
@@ -128,7 +135,7 @@ export default function LandingPage() {
             to="/get-started"
             className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors group"
           >
-            Bring Bee Archetypes to your team
+            See your team's coverage
             <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
         </div>

@@ -125,6 +125,27 @@ export default function ResultsPage() {
       {/* Primary reveal */}
       <PrimaryReveal primary={primary} systemLabel={primarySystem.label} />
 
+      {/* Team CTA — moment-of-delight after the reveal, before secondaries */}
+      <section className="mt-16">
+        <div className="rounded-card border border-hive-honey/30 bg-gradient-to-br from-hive-honey/5 via-hive-charcoal/60 to-hive-charcoal/60 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+          <div className="flex-1">
+            <p className="text-xs uppercase tracking-widest text-hive-mist mb-2">
+              For teams
+            </p>
+            <p className="font-serif text-xl md:text-2xl text-hive-cream leading-snug">
+              You're a {primary.name}. See where the rest of your team lives.
+            </p>
+          </div>
+          <Link
+            to="/get-started"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors group flex-shrink-0"
+          >
+            Bring to your team
+            <span className="transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
+        </div>
+      </section>
+
       {/* Secondaries */}
       <section className="mt-24">
         <SectionHeader kicker="Also strongly present" title="Your secondary bees" />

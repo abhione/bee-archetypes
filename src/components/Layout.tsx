@@ -48,15 +48,23 @@ function Header({ transparent }: { transparent?: boolean }) {
             Bee Archetypes
           </span>
         </Link>
-        <button
-          type="button"
-          onClick={() => setMobileNavOpen((v) => !v)}
-          className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-card text-hive-mist hover:text-hive-cream hover:bg-hive-charcoal/60 transition-colors"
-          aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileNavOpen}
-        >
-          {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <Link
+            to="/get-started"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill bg-hive-honey text-hive-black text-xs font-medium hover:bg-hive-honey/90 transition-colors"
+          >
+            For teams
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen((v) => !v)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-card text-hive-mist hover:text-hive-cream hover:bg-hive-charcoal/60 transition-colors"
+            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileNavOpen}
+          >
+            {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
         <nav className="hidden md:flex items-center gap-6 text-sm text-hive-mist">
           <Link to="/method" className="hover:text-hive-cream transition-colors">
             Method
