@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
@@ -7,6 +8,7 @@ import {
   UserButton,
   OrganizationSwitcher,
 } from '@clerk/clerk-react';
+import { Menu, X } from 'lucide-react';
 
 const CLERK_ENABLED = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -28,6 +30,8 @@ export default function Layout({ children }: LayoutProps) {
 }
 
 function Header({ transparent }: { transparent?: boolean }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <header
       className={cn(
@@ -44,6 +48,15 @@ function Header({ transparent }: { transparent?: boolean }) {
             Bee Archetypes
           </span>
         </Link>
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen((v) => !v)}
+          className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-card text-hive-mist hover:text-hive-cream hover:bg-hive-charcoal/60 transition-colors"
+          aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileNavOpen}
+        >
+          {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
         <nav className="hidden md:flex items-center gap-6 text-sm text-hive-mist">
           <Link to="/method" className="hover:text-hive-cream transition-colors">
             Method
@@ -103,6 +116,56 @@ function Header({ transparent }: { transparent?: boolean }) {
           )}
         </nav>
       </div>
+      {mobileNavOpen && (
+        <div className="md:hidden border-t border-hive-slate/40 bg-hive-black/95 backdrop-blur">
+          <div className="mx-auto max-w-6xl px-6 py-4 flex flex-col gap-3 text-sm text-hive-mist">
+            <Link
+              to="/method"
+              onClick={() => setMobileNavOpen(false)}
+              className="py-2 hover:text-hive-cream transition-colors"
+            >
+              Method
+            </Link>
+            {CLERK_ENABLED ? (
+              <>
+                <SignedOut>
+                  <Link
+                    to="/sign-in"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="py-2 hover:text-hive-cream transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/sign-up"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="py-2 px-4 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors text-center"
+                  >
+                    Bring to your team
+                  </Link>
+                </SignedOut>
+                <SignedIn>
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="py-2 hover:text-hive-cream transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                </SignedIn>
+              </>
+            ) : (
+              <Link
+                to="/get-started"
+                onClick={() => setMobileNavOpen(false)}
+                className="py-2 px-4 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors text-center"
+              >
+                Bring to your team
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

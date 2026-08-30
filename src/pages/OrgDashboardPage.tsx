@@ -179,7 +179,7 @@ export default function OrgDashboardPage() {
             </p>
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-4 md:gap-8 pt-6 border-t border-hive-slate/40">
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 pt-6 border-t border-hive-slate/40">
           <Stat label="Team members" value={completedCount} suffix="assessed" />
           <Stat
             label="Systems covered"
@@ -266,56 +266,90 @@ export default function OrgDashboardPage() {
           title="Who lives where in the hive"
         />
         <div className="mt-6 rounded-card border border-hive-slate/50 bg-hive-charcoal/60 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-hive-slate/40">
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
-                  Name
-                </th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
-                  Title
-                </th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
-                  Primary bee
-                </th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
-                  System
-                </th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
-                  Shadow
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeTeam.map((m) => {
-                const arch = getArchetype(m.archetype);
-                const sys = getSystem(arch.systemId);
-                const shadowArch = getArchetype(m.shadow);
-                return (
-                  <tr
-                    key={m.id}
-                    className="border-b border-hive-slate/20 hover:bg-hive-charcoal/80 transition-colors"
-                  >
-                    <td className="py-4 px-6 text-hive-cream">{m.name}</td>
-                    <td className="py-4 px-6 text-hive-mist">{m.title}</td>
-                    <td className="py-4 px-6 font-serif text-hive-honey">{arch.name}</td>
-                    <td className="py-4 px-6 text-hive-mist">{sys.code}</td>
-                    <td className="py-4 px-6 text-hive-cream/60 italic">
-                      {shadowArch.name}
+          {/* Desktop: table */}
+          <div className="hidden md:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-hive-slate/40">
+                  <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
+                    Name
+                  </th>
+                  <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
+                    Title
+                  </th>
+                  <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
+                    Primary bee
+                  </th>
+                  <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
+                    System
+                  </th>
+                  <th className="text-left py-4 px-6 text-xs uppercase tracking-widest text-hive-mist font-normal">
+                    Shadow
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeTeam.map((m) => {
+                  const arch = getArchetype(m.archetype);
+                  const sys = getSystem(arch.systemId);
+                  const shadowArch = getArchetype(m.shadow);
+                  return (
+                    <tr
+                      key={m.id}
+                      className="border-b border-hive-slate/20 hover:bg-hive-charcoal/80 transition-colors"
+                    >
+                      <td className="py-4 px-6 text-hive-cream">{m.name}</td>
+                      <td className="py-4 px-6 text-hive-mist">{m.title}</td>
+                      <td className="py-4 px-6 font-serif text-hive-honey">{arch.name}</td>
+                      <td className="py-4 px-6 text-hive-mist">{sys.code}</td>
+                      <td className="py-4 px-6 text-hive-cream/60 italic">
+                        {shadowArch.name}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {activeTeam.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-hive-mist italic">
+                      No live results yet. Toggle to demo mode to preview what
+                      this becomes.
                     </td>
                   </tr>
-                );
-              })}
-              {activeTeam.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-hive-mist italic">
-                    No live results yet. Toggle to demo mode to preview what
-                    this becomes.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile: card list */}
+          <div className="md:hidden divide-y divide-hive-slate/20">
+            {activeTeam.map((m) => {
+              const arch = getArchetype(m.archetype);
+              const sys = getSystem(arch.systemId);
+              const shadowArch = getArchetype(m.shadow);
+              return (
+                <div key={m.id} className="p-5">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="min-w-0">
+                      <p className="text-hive-cream truncate">{m.name}</p>
+                      <p className="text-xs text-hive-mist truncate">{m.title}</p>
+                    </div>
+                    <span className="text-xs uppercase tracking-widest text-hive-mist flex-shrink-0">
+                      {sys.code}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="font-serif text-hive-honey">{arch.name}</span>
+                    <span className="text-xs text-hive-mist">·</span>
+                    <span className="text-xs text-hive-cream/60 italic">shadow: {shadowArch.name}</span>
+                  </div>
+                </div>
+              );
+            })}
+            {activeTeam.length === 0 && (
+              <p className="p-8 text-center text-hive-mist italic text-sm">
+                No live results yet. Toggle to demo mode to preview what this becomes.
+              </p>
+            )}
+          </div>
         </div>
       </motion.section>
 
@@ -333,7 +367,7 @@ export default function OrgDashboardPage() {
               : 'The capacity read on your hive'
           }
         />
-        <div className="mt-6 rounded-card border border-hive-slate/50 bg-hive-charcoal/60 p-8 md:p-10">
+        <div className="mt-6 rounded-card border border-hive-slate/50 bg-hive-charcoal/60 p-6 sm:p-8 md:p-10">
           <ExecutiveReadout
             personaId={persona.id}
             team={activeTeam}
@@ -359,8 +393,8 @@ interface StatProps {
 function Stat({ label, value, suffix }: StatProps) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-widest text-hive-mist">{label}</p>
-      <p className="mt-1 font-serif text-4xl text-hive-cream tabular-nums">{value}</p>
+      <p className="text-xs uppercase tracking-widest text-hive-mist leading-tight">{label}</p>
+      <p className="mt-1 font-serif text-3xl sm:text-4xl text-hive-cream tabular-nums">{value}</p>
       {suffix && <p className="mt-1 text-xs text-hive-mist">{suffix}</p>}
     </div>
   );
@@ -461,7 +495,7 @@ function ModeToggle({
               )}
             >
               <Users className="w-3 h-3" />
-              {m} · {count}
+              <span className="hidden sm:inline">{m} · </span>{count}
             </button>
           );
         })}
