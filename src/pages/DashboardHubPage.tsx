@@ -134,7 +134,7 @@ export default function DashboardHubPage() {
               No hives yet.
             </h2>
             <p className="text-hive-mist mb-8 max-w-lg mx-auto">
-              Start your first hive to bring the Bee Archetypes to your team.
+              Start your first hive to bring Bee Archetypes to your team.
             </p>
             <Link
               to="/get-started"
@@ -163,7 +163,7 @@ export default function DashboardHubPage() {
               Haven't found your own bee yet?
             </h3>
             <p className="mt-2 text-hive-mist max-w-lg">
-              Take the 6-minute assessment. It's the same one you'll send your team.
+              Take the three-minute assessment. It's the same one you'll send your team.
             </p>
           </div>
           <Link

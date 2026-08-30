@@ -90,11 +90,11 @@ export const SIZE_RANGES: readonly { value: SizeRange; label: string }[] = [
 ];
 
 export const CHALLENGES: readonly { value: ChallengeTag; label: string }[] = [
-  { value: 'growth-phase', label: 'Growth phase — scaling the org' },
-  { value: 'transformation', label: 'Transformation — cultural / operational change' },
-  { value: 'mna-integration', label: 'M&A integration — merging teams and cultures' },
-  { value: 'workforce-redesign', label: 'Workforce redesign — reshaping teams' },
-  { value: 'ai-adoption', label: 'AI adoption — figuring out how humans and agents pair' },
+  { value: 'growth-phase', label: 'Growth phase: scaling the org' },
+  { value: 'transformation', label: 'Transformation: cultural or operational change' },
+  { value: 'mna-integration', label: 'M&A integration: merging teams and cultures' },
+  { value: 'workforce-redesign', label: 'Workforce redesign: reshaping teams' },
+  { value: 'ai-adoption', label: 'AI adoption: figuring out how humans and agents pair' },
   { value: 'other', label: 'Something else' },
 ];
 

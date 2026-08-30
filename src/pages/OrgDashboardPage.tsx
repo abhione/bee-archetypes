@@ -223,7 +223,7 @@ export default function OrgDashboardPage() {
           <SectionHeader
             kicker="Coverage gaps"
             title="Archetypes not represented on your team"
-            note="Not all archetypes need to be in-house. But when the pattern is missing entirely, its work does not get done — it just gets called a 'blocker' six months from now."
+            note="Not all archetypes need to be in-house. But when the pattern is missing entirely, its work does not get done. It just gets called a 'blocker' six months from now."
           />
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {missing.slice(0, 6).map((aid) => {
@@ -550,7 +550,7 @@ function ExecutiveReadout({
     return (
       <div className="space-y-4 text-hive-cream/85 leading-relaxed">
         <p>
-          Your hive is anchored in {dominantSystem?.code ?? 'no dominant'} —{' '}
+          Your hive is anchored in {dominantSystem?.code ?? 'no dominant'}:{' '}
           {dominantSystem?.label ?? 'no clear direction'}. That is where{' '}
           {dominantSystemEntry?.[1] ?? 0} of {team.length} of your operators live.
           It shapes the culture people feel when they land in {orgName}.
@@ -569,7 +569,7 @@ function ExecutiveReadout({
             Three specific archetypes not on the map:{' '}
             <span className="text-hive-honey">{missingNames.join(', ')}</span>.
             Before hiring, ask whether one of your existing team members is
-            secretly playing that role — and whether they are being credited for
+            secretly playing that role, and whether they are being credited for
             it.
           </p>
         )}
@@ -592,7 +592,7 @@ function ExecutiveReadout({
       </p>
       {weakestSystemEntry && (
         <p>
-          You are exposed on {weakestSystemEntry.code} —{' '}
+          You are exposed on {weakestSystemEntry.code}:{' '}
           {weakestSystemEntry.label.toLowerCase()}. Zero of your assessed team
           shows a primary in this system. In a{' '}
           {dominantSystem?.code === 'Sun' ? 'strategy-first' : 'execution-first'}{' '}
@@ -609,7 +609,7 @@ function ExecutiveReadout({
       )}
       <p className="italic text-hive-mist">
         Recommended next move: name the person on your team whose primary and
-        shadow are one pattern apart. That person is your highest-leverage
+        shadow are one pattern apart. That person is your highest-value
         development bet this quarter.
       </p>
     </div>

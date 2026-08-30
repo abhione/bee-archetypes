@@ -1,5 +1,5 @@
 /**
- * Bee Archetypes assessment — 18 questions × 4 options.
+ * Bee Archetypes assessment — 21 questions × 4 options.
  *
  * Each option carries a partial weight vector (Record<ArchetypeId, number>)
  * with values in [0, 2]. On submission we sum the vectors across all
@@ -34,7 +34,7 @@ export interface QuestionOption {
 export interface Question {
   id: string;
   prompt: string;
-  /** Short kicker above the prompt, e.g. "How you show up · 1 of 18". */
+  /** Short kicker above the prompt, e.g. "How you show up · 1 of 21". */
   kicker?: string;
   options: QuestionOption[];
 }
@@ -42,7 +42,7 @@ export interface Question {
 /**
  * Questions authored to disambiguate the 15 archetypes cleanly.
  * Each question probes 3-4 archetypes distinctly, with weights tuned so
- * that any 18-answer path produces a clear primary within +/- 1 point of
+ * that any 21-answer path produces a clear primary within +/- 1 point of
  * the second-place archetype.
  */
 export const QUESTIONS: readonly Question[] = [
@@ -100,7 +100,7 @@ export const QUESTIONS: readonly Question[] = [
   },
   {
     id: 'q03',
-    prompt: 'A cross-functional meeting is going sideways. What move feels most natural?',
+    prompt: 'A meeting between two teams is going sideways. What move feels most natural?',
     options: [
       {
         id: 'q03a',
@@ -119,7 +119,7 @@ export const QUESTIONS: readonly Question[] = [
       },
       {
         id: 'q03d',
-        label: 'Log the dispute so we have a paper trail for next time.',
+        label: 'Write down what was actually agreed so we are not relitigating it next month.',
         weights: { archivist: 2, hygienist: 1, sentinel: 1 },
       },
     ],
@@ -171,7 +171,7 @@ export const QUESTIONS: readonly Question[] = [
       },
       {
         id: 'q05d',
-        label: 'External conversations — customers, partners, prospects.',
+        label: 'External conversations with customers, partners, and prospects.',
         weights: { pollinator: 2, forager: 1, 'swarm-leader': 1 },
       },
     ],
@@ -264,22 +264,22 @@ export const QUESTIONS: readonly Question[] = [
     options: [
       {
         id: 'q09a',
-        label: 'The shape of the story — why it matters and where it goes.',
+        label: 'The shape of the story: why it matters and where it goes.',
         weights: { alchemist: 2, queen: 1, pollinator: 1 },
       },
       {
         id: 'q09b',
-        label: 'The mechanism — the how, the who, the cadence.',
+        label: 'The mechanism: the how, the who, the cadence.',
         weights: { catalyst: 2, builder: 1, 'swarm-leader': 1 },
       },
       {
         id: 'q09c',
-        label: 'The team — the fact that they can actually do it.',
+        label: 'The team: whether they can actually do it.',
         weights: { nurse: 2, waggle: 1, regulator: 1 },
       },
       {
         id: 'q09d',
-        label: 'The safeguards — that we made it without breaking anything.',
+        label: 'The safeguards: that we made it without breaking anything.',
         weights: { hygienist: 2, guardian: 1, sentinel: 1 },
       },
     ],
@@ -438,7 +438,7 @@ export const QUESTIONS: readonly Question[] = [
       },
       {
         id: 'q15d',
-        label: 'I start seeing risk everywhere and become the friction I was hired to prevent.',
+        label: 'I start seeing risk everywhere, becoming the friction I was hired to prevent.',
         weights: { hygienist: 1, guardian: 1 },
         stressSignal: 'hygienist',
       },
@@ -517,7 +517,7 @@ export const QUESTIONS: readonly Question[] = [
       },
       {
         id: 'q18d',
-        label: 'The soundness of what we ship — and what we do not.',
+        label: 'The soundness of what we ship, and what we do not.',
         weights: { hygienist: 2, guardian: 1, sentinel: 1 },
       },
     ],
@@ -543,7 +543,7 @@ export const QUESTIONS: readonly Question[] = [
       },
       {
         id: 'q19d',
-        label: 'Holding the room when the stakes get uncomfortable.',
+        label: 'Holding the room steady when the stakes turn genuinely uncomfortable.',
         weights: { regulator: 2, guardian: 1, queen: 1 },
       },
     ],
@@ -576,7 +576,7 @@ export const QUESTIONS: readonly Question[] = [
   },
   {
     id: 'q21',
-    prompt: 'When your job title does not fit what you actually do, what do you actually do?',
+    prompt: 'Your job title does not quite cover what you actually do. What is the work underneath it?',
     options: [
       {
         id: 'q21a',

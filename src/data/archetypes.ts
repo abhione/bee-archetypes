@@ -125,7 +125,7 @@ export const AGENTIC_COUNTERPARTS: readonly AgenticCounterpart[] = [
     name: 'Debt Detection Agent',
     systemAnchor: 'guard',
     description:
-      'Watches for the drift patterns — quality, process, technical, cultural — that only compound in the dark. Names them while they are still cheap to fix.',
+      'Watches for the drift patterns that only compound in the dark: quality, process, technical, cultural. Names them while they are still cheap to fix.',
   },
 ] as const;
 

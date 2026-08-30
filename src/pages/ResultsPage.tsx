@@ -72,7 +72,7 @@ export default function ResultsPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `I'm the ${getArchetype(stored.result.primary).name} — Bee Archetypes`,
+          title: `I'm the ${getArchetype(stored.result.primary).name} · Bee Archetypes`,
           text: `I just took the Bee Archetypes assessment. My primary bee: ${getArchetype(stored.result.primary).name}.`,
           url: shareUrl,
         });

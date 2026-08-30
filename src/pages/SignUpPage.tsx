@@ -8,7 +8,7 @@ export default function SignUpPage() {
         <p className="text-sm uppercase tracking-widest text-hive-honey">Create account</p>
         <h1 className="mt-2 font-serif text-4xl text-hive-cream">Start your hive.</h1>
         <p className="mt-3 text-hive-mist">
-          One-click sign-up with your work email. No password.
+          Sign up with your work email. No password, just a one-time code.
         </p>
       </div>
       <div className="flex justify-center">

@@ -173,7 +173,7 @@ export default function GetStartedPage() {
           }
         }
         if (failedEmails.length > 0) {
-          setError(`Could not invite: ${failedEmails.join(', ')} — the rest succeeded.`);
+          setError(`Could not invite: ${failedEmails.join(', ')}. The rest succeeded.`);
         }
       } else if (createdOrgSlug) {
         // Fallback: localStorage-backed (preview mode without Clerk).
@@ -393,7 +393,7 @@ export default function GetStartedPage() {
               their results will populate your dashboard as they complete.
             </p>
 
-            <Field label="Email addresses" hint="Paste any format — one per line, commas, or spaces.">
+            <Field label="Email addresses" hint="Paste any format: one per line, commas, or spaces.">
               <textarea
                 value={inviteEmails}
                 onChange={(e) => setInviteEmails(e.target.value)}

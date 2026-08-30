@@ -59,8 +59,8 @@ export default function LandingPage() {
             <span className="honey-underline">flows through you</span>.
           </h1>
           <p className="mt-8 text-xl text-hive-mist max-w-2xl leading-relaxed">
-            A three-minute assessment that names your natural contribution — and the
-            Agentic Counterpart that would amplify it most.
+            A three-minute assessment that names your natural contribution, then pairs it
+            with the Agentic Counterpart that would amplify it most.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Link

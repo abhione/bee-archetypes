@@ -30,8 +30,8 @@ export default function MethodPage() {
         </h1>
         <p className="mt-6 text-lg text-hive-mist leading-relaxed max-w-2xl">
           Bee Archetypes is a shared language for how work actually flows through an
-          organization &mdash; not what people's titles say, but what patterns they
-          contribute when the work is real.
+          organization. Titles say one thing. The patterns people contribute when the
+          work is real say another.
         </p>
       </motion.header>
 
@@ -48,8 +48,8 @@ export default function MethodPage() {
         <p className="mt-4 text-hive-mist leading-relaxed">
           A hive is not one thing. It is five interlocking systems, each with its
           own posture, cadence, and contribution. Every archetype belongs to one
-          system as its home &mdash; but real operators show up across two or three,
-          with one always dominant and one usually invisible.
+          system as its home. Real operators show up across two or three, with one
+          always dominant and one usually invisible.
         </p>
 
         <div className="mt-10 space-y-6">
@@ -95,7 +95,7 @@ export default function MethodPage() {
         </h2>
         <p className="mt-4 text-hive-mist leading-relaxed">
           Each of the 21 questions offers four responses. Every response carries a
-          weight vector across all 15 archetypes &mdash; usually one primary weight
+          weight vector across all 15 archetypes: usually one primary weight
           (value 2), one or two secondary weights (value 1), and zeros for the rest.
         </p>
         <p className="mt-4 text-hive-mist leading-relaxed">
@@ -107,13 +107,13 @@ export default function MethodPage() {
         </p>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { label: 'Primary', desc: 'Your dominant pattern &mdash; where you naturally live.' },
+            { label: 'Primary', desc: 'Your dominant pattern: where you naturally live.' },
             { label: 'Shadow', desc: "The archetype you avoid. Usually where your team wants you to grow." },
-            { label: 'Balance', desc: 'Two patterns that would counter-weight yours &mdash; hire, partner, or develop.' },
+            { label: 'Balance', desc: 'Two patterns that would counter-weight yours: hire, partner, or develop.' },
           ].map((x) => (
             <div key={x.label} className="p-5 rounded-card border border-hive-slate/50 bg-hive-charcoal/60">
               <p className="text-xs uppercase tracking-widest text-hive-honey">{x.label}</p>
-              <p className="mt-2 text-sm text-hive-cream/85" dangerouslySetInnerHTML={{ __html: x.desc }} />
+              <p className="mt-2 text-sm text-hive-cream/85">{x.desc}</p>
             </div>
           ))}
         </div>
@@ -132,7 +132,8 @@ export default function MethodPage() {
         <p className="mt-4 text-hive-mist leading-relaxed">
           The end-game of Bee Archetypes is not a personality quiz. It is a coordination
           language for humans and AI agents working together. Each archetype pattern gets
-          a matching AI counterpart &mdash; not a replacement, an amplifier.
+          a matching AI counterpart. It sharpens the pattern. It never replaces the person
+          carrying it.
         </p>
         <p className="mt-4 text-hive-mist leading-relaxed">
           The first three counterparts ship in Q1 2027:
@@ -172,7 +173,7 @@ export default function MethodPage() {
         <h2 className="font-serif text-3xl md:text-4xl text-hive-cream">
           See which pattern lives in you.
         </h2>
-        <p className="mt-3 text-hive-mist">Takes about six minutes. Free for individuals.</p>
+        <p className="mt-3 text-hive-mist">Takes about three minutes. Free for individuals.</p>
         <Link
           to="/assessment"
           className="mt-8 inline-flex items-center gap-2 px-8 py-3 rounded-pill bg-hive-honey text-hive-black font-medium hover:bg-hive-honey/90 transition-colors"

@@ -8,7 +8,7 @@ export default function SignInPage() {
         <p className="text-sm uppercase tracking-widest text-hive-honey">Sign in</p>
         <h1 className="mt-2 font-serif text-4xl text-hive-cream">Welcome back.</h1>
         <p className="mt-3 text-hive-mist">
-          Sign in with your work email. We'll send you a magic link.
+          Sign in with your work email. We'll send you a one-time code.
         </p>
       </div>
       <div className="flex justify-center">
